@@ -1,21 +1,87 @@
 import { useEffect, useState } from "react";
-import react from "react";
-import axios from "axios";
+
+import { featchWeater } from "./Api";
+import { ControllerSwitched } from "./Switch";
+
+
 
 const WetherRequest = () => {
   const [weather, setWeather] = useState(null);
-  useEffect(() => {
-    axios
-      .get(
-        "http://api.weatherapi.com/v1/current.json?key=cb8874ebb1344d34817173858220805&q=London&aqi=no"
-      )
-      .then((data) => {
-        setWeather(data.data);
+  const [region, setRegion] = useState(null)
+  const [tempC, setTempC] = useState()
+  const [tempF, setTempF] = useState()
+
+  const changeRegion = (e) => {
+    
+    setRegion(e.target.value)
+  
+  }
+
+  const setTemp = () => {
+    setTempC(weather.current.temp_c) 
+    setTempF(weather.current.temp_f)
+  }
+   
+  const clickButtonLocation = () => {
+     
+    featchWeater(region).then((data)=>{
+      console.log(data.data)
+     setWeather(data.data)  
+     setTemp(weather)
+   }).catch(e => {
+    console.log(e)
+  })
+  
+  }
+
+  const enterLocation = (e) => { 
+     if(e.key === 'Enter' ) {
+       featchWeater(region).then((data)=>{
+        
+         console.log(data.data)
+        setWeather(data.data)
+        setTemp(weather)
+        
+      }).catch(e => {
+        console.log(e)
       })
-      .catch((err) => console.log(err));
-  }, []);
-  console.log(weather);
-  return <div>{weather && <h2>{weather.location.region}</h2>}</div>;
+
+      
+     } 
+  } 
+
+  
+  return <div>
+    <div>
+      <h1>Weater</h1>
+      <input placeholder="Region" onKeyDown={enterLocation} onChange={changeRegion} ></input>
+      <button onClick={clickButtonLocation} >ENTER</button>
+    </div>
+    <div>
+      {weather && 
+      <div>
+      <h2>
+         {weather.location.region}
+        </h2>
+        <h3>
+          {weather.location.country}
+        </h3>
+        {weather && <h4>
+          
+          <ControllerSwitched 
+            tempC = {tempC}
+            tempF = {tempF}
+            />
+          
+        </h4>}
+            
+        <h4>
+          Wind: {weather.current.vis_km} km per hour 🍃
+        </h4>
+        <img src={weather.current.condition.icon} alt='image' />
+       </div>}
+    </div>
+  </div>;
 };
 
 export default WetherRequest;
